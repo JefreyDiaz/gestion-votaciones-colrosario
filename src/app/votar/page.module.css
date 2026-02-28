@@ -1,0 +1,139 @@
+.page {
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+.bannerWrap {
+  width: min(64rem, 100%);
+}
+
+.header {
+  width: min(64rem, 100%);
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.2rem 0.15rem;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  color: var(--brand-700);
+}
+
+.header p {
+  color: #644a52;
+}
+
+.votingContainer {
+  width: min(64rem, 100%);
+  display: grid;
+  gap: 1rem;
+}
+
+.helperText {
+  color: #583740;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 8px 16px rgb(58 12 23 / 7%);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand-200);
+  box-shadow: 0 12px 24px rgb(58 12 23 / 11%);
+}
+
+.card:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: #f4e8eb;
+}
+
+.card p {
+  font-weight: 600;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(74 13 27 / 62%);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.modal {
+  width: min(100%, 28rem);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--line);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modalActions button {
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+}
+
+.modalActions button:last-child {
+  background: var(--brand-600);
+  color: #ffffff;
+  border-color: var(--brand-600);
+}
+
+.successMessage {
+  color: #047857;
+  font-weight: 600;
+}
+
+.errorMessage {
+  color: #9e1135;
+  font-weight: 600;
+}
+
+.emptyState {
+  width: min(40rem, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: grid;
+  gap: 0.6rem;
+}

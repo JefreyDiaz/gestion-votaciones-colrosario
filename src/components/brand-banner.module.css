@@ -1,0 +1,50 @@
+.banner {
+  position: relative;
+  width: 100%;
+  min-height: 12.5rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 28%);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 16%);
+}
+
+.compact {
+  min-height: 10rem;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, rgb(67 11 22 / 72%) 15%, rgb(145 17 41 / 46%) 60%, rgb(255 255 255 / 0%) 100%);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 1rem 1.15rem;
+  color: #fff7f8;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.kicker {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.content h2 {
+  font-size: clamp(1.2rem, 2.8vw, 1.65rem);
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 0.92rem;
+  max-width: 34rem;
+  color: #ffe7eb;
+}

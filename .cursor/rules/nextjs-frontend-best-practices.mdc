@@ -1,0 +1,30 @@
+---
+description: Next.js App Router frontend best practices
+alwaysApply: true
+---
+
+# Next.js Frontend Best Practices
+
+- Usa `App Router` y privilegia `Server Components`; agrega `"use client"` solo si hay estado, efectos o eventos de UI.
+- Mantén la lógica de datos en servidor (`Server Actions`, `Route Handlers`); evita `fetch` directo desde componentes cliente para secretos.
+- Define `loading.tsx`, `error.tsx` y `not-found.tsx` por segmento crítico para UX resiliente.
+- Centraliza esquemas con `zod` para validar `searchParams`, `forms` y respuestas externas.
+- Estandariza estados UI: `idle`, `loading`, `success`, `error`; no mezclar rendering condicional ad-hoc.
+- Optimiza rendimiento con `next/image`, `dynamic import` y cache explícita (`revalidate`, `no-store`) según caso.
+
+## Ejemplo de patrón recomendado
+
+```tsx
+// ✅ Server component: obtiene datos en servidor
+export default async function Page() {
+  const data = await getDashboardData();
+  return <DashboardView data={data} />;
+}
+
+// ✅ Client component: solo interacción
+"use client";
+export function Filters() {
+  const [value, setValue] = useState("");
+  return <input value={value} onChange={(e) => setValue(e.target.value)} />;
+}
+```

@@ -1,0 +1,37 @@
+:root {
+  --brand-50: #fff4f6;
+  --brand-100: #ffe4ea;
+  --brand-200: #fecdd8;
+  --brand-500: #d92d53;
+  --brand-600: #be1e45;
+  --brand-700: #99193b;
+  --ink-900: #1f1720;
+  --surface: #ffffff;
+  --surface-soft: #fff8f9;
+  --line: #eed6dc;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--ink-900);
+  background: radial-gradient(circle at top, var(--brand-100) 0%, #faf7f8 32%, #f7f6f7 100%);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

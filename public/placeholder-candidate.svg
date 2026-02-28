@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-label="Imagen de candidato">
+  <rect width="640" height="640" fill="#d1d5db" />
+  <circle cx="320" cy="240" r="110" fill="#9ca3af" />
+  <rect x="140" y="390" width="360" height="180" rx="90" fill="#9ca3af" />
+</svg>
