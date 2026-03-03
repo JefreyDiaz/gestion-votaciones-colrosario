@@ -10,6 +10,7 @@ import {
 import { getAdminDashboardData, getAdminManageData } from "@/lib/polls";
 
 import { DeleteCandidateControl } from "./delete-candidate-control";
+import { OverviewPollSelector } from "./overview-poll-selector";
 import { BrandBanner } from "@/components/brand-banner";
 import styles from "./page.module.css";
 
@@ -19,6 +20,7 @@ type AdminPageProps = {
     success?: string;
     tab?: string;
     pollId?: string;
+    overviewPollId?: string;
   }>;
 };
 
@@ -72,7 +74,7 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
   }
 
   const [dashboardData, manageData] = await Promise.all([
-    getAdminDashboardData(),
+    getAdminDashboardData(params.overviewPollId),
     getAdminManageData(params.pollId),
   ]);
 
@@ -80,10 +82,27 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
   const manageTabHref = manageData.selectedPollId
     ? `/admin?tab=manage&pollId=${manageData.selectedPollId}`
     : "/admin?tab=manage";
+  const selectedOverviewPollId = dashboardData?.pollId ?? params.overviewPollId;
+  const overviewTabHref = selectedOverviewPollId
+    ? `/admin?tab=overview&overviewPollId=${selectedOverviewPollId}`
+    : "/admin?tab=overview";
 
   const overviewSection = dashboardData ? (
     <>
       <section className={styles.panel}>
+        <div className={styles.overviewActions}>
+          <OverviewPollSelector polls={manageData.polls} selectedPollId={selectedOverviewPollId} />
+
+          {dashboardData ? (
+            <a
+              className={styles.exportLink}
+              href={`/admin/export?pollId=${dashboardData.pollId}`}
+            >
+              Exportar Excel
+            </a>
+          ) : null}
+        </div>
+
         <h2>{dashboardData.pollTitle}</h2>
         <p>Alcance: {scopeLabel(dashboardData.scope)}</p>
         <p>Total de votos: {dashboardData.totalVotes}</p>
@@ -342,7 +361,7 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
         <div className={styles.tabs}>
           <a
             className={activeTab === "overview" ? styles.tabActive : styles.tab}
-            href="/admin?tab=overview"
+            href={overviewTabHref}
           >
             Resumen
           </a>

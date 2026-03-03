@@ -143,19 +143,53 @@ export type AdminManagePollOption = {
   sortOrder: number;
 };
 
-export async function getAdminDashboardData(): Promise<AdminDashboardData | null> {
+type AdminPollSelectionRow = {
+  id: string;
+  title: string;
+  scope: PollScope;
+};
+
+async function getDashboardPoll(
+  selectedPollId?: string,
+): Promise<AdminPollSelectionRow | null> {
   const supabase = createServerServiceClient();
 
-  const { data: poll, error: pollError } = await supabase
+  if (selectedPollId) {
+    const { data: selectedPoll, error: selectedPollError } = await supabase
+      .from("polls")
+      .select("id, title, scope")
+      .eq("id", selectedPollId)
+      .maybeSingle();
+
+    if (selectedPollError) {
+      throw new Error(`No se pudo obtener la votacion seleccionada: ${selectedPollError.message}`);
+    }
+
+    if (selectedPoll) {
+      return selectedPoll;
+    }
+  }
+
+  const { data: latestPoll, error: latestPollError } = await supabase
     .from("polls")
-    .select("id, title, status, starts_at, ends_at, scope")
+    .select("id, title, scope")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (pollError) {
-    throw new Error(`No se pudo obtener la votacion para dashboard: ${pollError.message}`);
+  if (latestPollError) {
+    throw new Error(`No se pudo obtener la votacion para dashboard: ${latestPollError.message}`);
   }
+
+  return latestPoll;
+}
+
+export async function getAdminDashboardData(
+  selectedPollId?: string,
+  recentVotesLimit = 50,
+): Promise<AdminDashboardData | null> {
+  const supabase = createServerServiceClient();
+  const poll = await getDashboardPoll(selectedPollId);
 
   if (!poll) {
     return null;
@@ -198,7 +232,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
     .select("id, created_at, voter_document, option_id")
     .eq("poll_id", poll.id)
     .order("created_at", { ascending: false })
-    .range(0, 49);
+    .range(0, Math.max(recentVotesLimit - 1, 0));
 
   if (recentVotesError) {
     throw new Error(`No se pudieron obtener votos recientes: ${recentVotesError.message}`);
@@ -219,6 +253,15 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
       candidateName: optionById.get(vote.option_id) ?? "Candidato desconocido",
     })),
   };
+}
+
+export async function getAdminPollExportData(selectedPollId?: string) {
+  const dashboardData = await getAdminDashboardData(selectedPollId, 10000);
+  if (!dashboardData) {
+    return null;
+  }
+
+  return dashboardData;
 }
 
 export async function getAdminManageData(selectedPollId?: string) {
