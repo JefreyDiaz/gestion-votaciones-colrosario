@@ -1,4 +1,6 @@
-import { createServerAnonClient, createServerServiceClient } from "@/lib/supabase/server";
+import { createServerServiceClient } from "@/lib/supabase/server";
+
+export type PollScope = "general" | "salon";
 
 export type CandidateOption = {
   id: string;
@@ -12,53 +14,96 @@ export type ActivePoll = {
   description: string | null;
   startsAt: string;
   endsAt: string;
+  scope: PollScope;
   options: CandidateOption[];
 };
 
-export async function getActivePoll(): Promise<ActivePoll | null> {
-  const supabase = createServerAnonClient();
-  const nowIso = new Date().toISOString();
+type PollRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  starts_at: string;
+  ends_at: string;
+  scope: PollScope;
+};
 
-  const { data: poll, error: pollError } = await supabase
-    .from("polls")
-    .select("id, title, description, starts_at, ends_at, status")
-    .eq("status", "open")
-    .lte("starts_at", nowIso)
-    .gte("ends_at", nowIso)
-    .order("starts_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (pollError) {
-    throw new Error(`No se pudo obtener la votacion activa: ${pollError.message}`);
-  }
-
-  if (!poll) {
-    return null;
-  }
-
-  const { data: options, error: optionsError } = await supabase
-    .from("poll_options")
-    .select("id, candidate_name, image_url, sort_order")
-    .eq("poll_id", poll.id)
-    .order("sort_order", { ascending: true });
-
-  if (optionsError) {
-    throw new Error(`No se pudieron obtener los candidatos: ${optionsError.message}`);
-  }
-
+function mapPollWithOptions(poll: PollRow, options: CandidateOption[]): ActivePoll {
   return {
     id: poll.id,
     title: poll.title,
     description: poll.description,
     startsAt: poll.starts_at,
     endsAt: poll.ends_at,
-    options: options.map((option) => ({
+    scope: poll.scope,
+    options,
+  };
+}
+
+export async function getVoterAvailablePolls(voterDocument: string): Promise<ActivePoll[]> {
+  const supabase = createServerServiceClient();
+  const nowIso = new Date().toISOString();
+
+  const { data: openPolls, error: pollError } = await supabase
+    .from("polls")
+    .select("id, title, description, starts_at, ends_at, scope")
+    .eq("status", "open")
+    .lte("starts_at", nowIso)
+    .gte("ends_at", nowIso)
+    .order("starts_at", { ascending: false })
+    .range(0, 19);
+
+  if (pollError) {
+    throw new Error(`No se pudieron obtener las votaciones activas: ${pollError.message}`);
+  }
+
+  if (!openPolls.length) {
+    return [];
+  }
+
+  const openPollIds = openPolls.map((poll) => poll.id);
+
+  const { data: votedRows, error: votedError } = await supabase
+    .from("votes")
+    .select("poll_id")
+    .eq("voter_document", voterDocument)
+    .in("poll_id", openPollIds);
+
+  if (votedError) {
+    throw new Error(`No se pudieron validar votos previos: ${votedError.message}`);
+  }
+
+  const votedPollIds = new Set(votedRows.map((vote) => vote.poll_id));
+  const availablePolls = openPolls.filter((poll) => !votedPollIds.has(poll.id));
+
+  if (!availablePolls.length) {
+    return [];
+  }
+
+  const availablePollIds = availablePolls.map((poll) => poll.id);
+  const { data: options, error: optionsError } = await supabase
+    .from("poll_options")
+    .select("id, poll_id, candidate_name, image_url, sort_order")
+    .in("poll_id", availablePollIds)
+    .order("sort_order", { ascending: true });
+
+  if (optionsError) {
+    throw new Error(`No se pudieron obtener los candidatos: ${optionsError.message}`);
+  }
+
+  const optionsByPoll = new Map<string, CandidateOption[]>();
+  options.forEach((option) => {
+    const currentOptions = optionsByPoll.get(option.poll_id) ?? [];
+    currentOptions.push({
       id: option.id,
       candidateName: option.candidate_name,
       imageUrl: option.image_url,
-    })),
-  };
+    });
+    optionsByPoll.set(option.poll_id, currentOptions);
+  });
+
+  return availablePolls
+    .map((poll) => mapPollWithOptions(poll, optionsByPoll.get(poll.id) ?? []))
+    .filter((poll) => poll.options.length > 0);
 }
 
 export type AdminVoteRow = {
@@ -71,6 +116,7 @@ export type AdminVoteRow = {
 export type AdminDashboardData = {
   pollTitle: string;
   pollId: string;
+  scope: PollScope;
   totalVotes: number;
   candidates: Array<{
     id: string;
@@ -83,6 +129,7 @@ export type AdminDashboardData = {
 export type AdminManagePoll = {
   id: string;
   title: string;
+  scope: PollScope;
   status: "draft" | "open" | "closed" | "archived";
   startsAt: string;
   endsAt: string;
@@ -101,7 +148,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
 
   const { data: poll, error: pollError } = await supabase
     .from("polls")
-    .select("id, title, status, starts_at, ends_at")
+    .select("id, title, status, starts_at, ends_at, scope")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -162,6 +209,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
   return {
     pollTitle: poll.title,
     pollId: poll.id,
+    scope: poll.scope,
     totalVotes,
     candidates,
     recentVotes: recentVotes.map((vote) => ({
@@ -178,7 +226,7 @@ export async function getAdminManageData(selectedPollId?: string) {
 
   const { data: polls, error: pollsError } = await supabase
     .from("polls")
-    .select("id, title, status, starts_at, ends_at, created_at")
+    .select("id, title, scope, status, starts_at, ends_at, created_at")
     .order("created_at", { ascending: false })
     .range(0, 29);
 
@@ -189,6 +237,7 @@ export async function getAdminManageData(selectedPollId?: string) {
   const mappedPolls: AdminManagePoll[] = polls.map((poll) => ({
     id: poll.id,
     title: poll.title,
+    scope: poll.scope,
     status: poll.status,
     startsAt: poll.starts_at,
     endsAt: poll.ends_at,

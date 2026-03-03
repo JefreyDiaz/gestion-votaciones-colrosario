@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { castVoteAction } from "@/app/actions";
 import type { ActivePoll } from "@/lib/polls";
@@ -11,6 +12,7 @@ import styles from "./page.module.css";
 type VotePanelProps = {
   poll: ActivePoll;
   voterDocument: string;
+  hasMorePolls: boolean;
 };
 
 type VoteResultState = {
@@ -18,7 +20,7 @@ type VoteResultState = {
   message: string;
 } | null;
 
-export function VotePanel({ poll, voterDocument }: VotePanelProps) {
+export function VotePanel({ poll, voterDocument, hasMorePolls }: Readonly<VotePanelProps>) {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [voteResult, setVoteResult] = useState<VoteResultState>(null);
   const [isPending, startTransition] = useTransition();
@@ -71,14 +73,26 @@ export function VotePanel({ poll, voterDocument }: VotePanelProps) {
       </div>
 
       {voteResult ? (
-        <p className={voteResult.ok ? styles.successMessage : styles.errorMessage}>
-          {voteResult.message}
-        </p>
+        <div className={styles.resultBox}>
+          <p className={voteResult.ok ? styles.successMessage : styles.errorMessage}>{voteResult.message}</p>
+          {voteResult.ok ? (
+            <div className={styles.resultActions}>
+              {hasMorePolls ? (
+                <Link href="/votar" className={styles.secondaryLinkButton}>
+                  Realizar otra votacion
+                </Link>
+              ) : null}
+              <Link href="/" className={styles.primaryLinkButton}>
+                Ingresar otro votante
+              </Link>
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       {selectedCandidate ? (
-        <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
-          <div className={styles.modal}>
+        <div className={styles.modalBackdrop}>
+          <dialog className={styles.modal} open>
             <h2>Confirmar voto</h2>
             <p>
               Documento <strong>{voterDocument}</strong>, vas a votar por{" "}
@@ -92,7 +106,7 @@ export function VotePanel({ poll, voterDocument }: VotePanelProps) {
                 {isPending ? "Guardando..." : "Confirmar voto"}
               </button>
             </div>
-          </div>
+          </dialog>
         </div>
       ) : null}
     </section>

@@ -33,6 +33,10 @@ function getTab(tab?: string) {
   return tab === "manage" ? "manage" : "overview";
 }
 
+function scopeLabel(scope: "general" | "salon") {
+  return scope === "general" ? "General" : "Por salon";
+}
+
 function toDateTimeLocalValue(dateIso: string) {
   const date = new Date(dateIso);
   const offset = date.getTimezoneOffset();
@@ -81,6 +85,7 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
     <>
       <section className={styles.panel}>
         <h2>{dashboardData.pollTitle}</h2>
+        <p>Alcance: {scopeLabel(dashboardData.scope)}</p>
         <p>Total de votos: {dashboardData.totalVotes}</p>
         <div className={styles.candidateGrid}>
           {dashboardData.candidates.map((candidate) => (
@@ -134,6 +139,12 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
           <label htmlFor="description">Descripcion</label>
           <textarea id="description" name="description" rows={3} maxLength={500} />
 
+          <label htmlFor="scope">Alcance</label>
+          <select id="scope" name="scope" defaultValue="general">
+            <option value="general">General</option>
+            <option value="salon">Por salon</option>
+          </select>
+
           <label htmlFor="startsAt">Apertura</label>
           <input id="startsAt" name="startsAt" type="datetime-local" required />
 
@@ -161,6 +172,7 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
               <thead>
                 <tr>
                   <th>Titulo</th>
+                  <th>Alcance</th>
                   <th>Estado</th>
                   <th>Apertura</th>
                   <th>Cierre</th>
@@ -171,6 +183,7 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
                 {manageData.polls.map((poll) => (
                   <tr key={poll.id}>
                     <td>{poll.title}</td>
+                    <td>{scopeLabel(poll.scope)}</td>
                     <td>{poll.status}</td>
                     <td>{formatDateTime(poll.startsAt)}</td>
                     <td>{formatDateTime(poll.endsAt)}</td>
@@ -201,6 +214,9 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
           <>
             <p>
               Votacion seleccionada: <strong>{selectedPoll.title}</strong>
+            </p>
+            <p>
+              Alcance de esta votacion: <strong>{scopeLabel(selectedPoll.scope)}</strong>
             </p>
             <form action={addCandidateAction} className={styles.formGrid}>
               <input type="hidden" name="pollId" value={selectedPoll.id} />
@@ -288,6 +304,12 @@ export default async function AdminPage({ searchParams }: Readonly<AdminPageProp
               <option value="open">Abierta</option>
               <option value="closed">Cerrada</option>
               <option value="archived">Archivada</option>
+            </select>
+
+            <label htmlFor="editScope">Alcance</label>
+            <select id="editScope" name="scope" defaultValue={selectedPoll.scope}>
+              <option value="general">General</option>
+              <option value="salon">Por salon</option>
             </select>
 
             <button type="submit">Guardar cambios</button>

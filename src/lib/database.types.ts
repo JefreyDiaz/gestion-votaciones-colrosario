@@ -45,6 +45,7 @@ export type Database = {
           description: string | null;
           ends_at: string;
           id: string;
+          scope: "general" | "salon";
           status: "draft" | "open" | "closed" | "archived";
           starts_at: string;
           title: string;
@@ -56,6 +57,7 @@ export type Database = {
           description?: string | null;
           ends_at: string;
           id?: string;
+          scope?: "general" | "salon";
           status?: "draft" | "open" | "closed" | "archived";
           starts_at: string;
           title: string;
@@ -67,6 +69,7 @@ export type Database = {
           description?: string | null;
           ends_at?: string;
           id?: string;
+          scope?: "general" | "salon";
           status?: "draft" | "open" | "closed" | "archived";
           starts_at?: string;
           title?: string;
@@ -117,6 +120,7 @@ export type Database = {
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
+      poll_scope: "general" | "salon";
       poll_status: "draft" | "open" | "closed" | "archived";
     };
     CompositeTypes: Record<string, never>;

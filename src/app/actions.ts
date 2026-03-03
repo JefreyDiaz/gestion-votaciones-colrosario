@@ -21,6 +21,7 @@ const documentSchema = z
 const voteInputSchema = z.object({
   optionId: z.uuid(),
 });
+const pollScopeSchema = z.enum(["general", "salon"]);
 
 function hashAdminKey(key: string) {
   return createHash("sha256").update(key).digest("hex");
@@ -188,8 +189,16 @@ export async function createPollAction(formData: FormData) {
   const startsAtRaw = z.string().trim().safeParse(formData.get("startsAt"));
   const endsAtRaw = z.string().trim().safeParse(formData.get("endsAt"));
   const status = z.enum(["draft", "open", "closed"]).safeParse(formData.get("status"));
+  const scope = pollScopeSchema.safeParse(formData.get("scope"));
 
-  if (!title.success || !description.success || !startsAtRaw.success || !endsAtRaw.success || !status.success) {
+  if (
+    !title.success ||
+    !description.success ||
+    !startsAtRaw.success ||
+    !endsAtRaw.success ||
+    !status.success ||
+    !scope.success
+  ) {
     redirect(buildAdminRedirect({ error: "Datos invalidos para crear votacion.", tab: "manage" }));
   }
 
@@ -218,6 +227,7 @@ export async function createPollAction(formData: FormData) {
       starts_at: startsAtDate.toISOString(),
       ends_at: endsAtDate.toISOString(),
       status: status.data,
+      scope: scope.data,
     })
     .select("id")
     .single();
@@ -354,8 +364,9 @@ export async function updatePollDetailsAction(formData: FormData) {
   const startsAtRaw = z.string().trim().safeParse(formData.get("startsAt"));
   const endsAtRaw = z.string().trim().safeParse(formData.get("endsAt"));
   const status = z.enum(["draft", "open", "closed", "archived"]).safeParse(formData.get("status"));
+  const scope = pollScopeSchema.safeParse(formData.get("scope"));
 
-  if (!pollId.success || !startsAtRaw.success || !endsAtRaw.success || !status.success) {
+  if (!pollId.success || !startsAtRaw.success || !endsAtRaw.success || !status.success || !scope.success) {
     redirect(buildAdminRedirect({ error: "Datos invalidos para editar votacion.", tab: "manage" }));
   }
 
@@ -383,6 +394,7 @@ export async function updatePollDetailsAction(formData: FormData) {
       starts_at: startsAtDate.toISOString(),
       ends_at: endsAtDate.toISOString(),
       status: status.data,
+      scope: scope.data,
       updated_at: new Date().toISOString(),
     })
     .eq("id", pollId.data);

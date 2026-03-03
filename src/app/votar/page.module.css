@@ -26,6 +26,15 @@
   color: #644a52;
 }
 
+.noticeError {
+  width: min(64rem, 100%);
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  background: #fff1f2;
+  color: #9f1239;
+  padding: 0.75rem 1rem;
+}
+
 .votingContainer {
   width: min(64rem, 100%);
   display: grid;
@@ -128,6 +137,35 @@
   font-weight: 600;
 }
 
+.resultBox {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.primaryLinkButton,
+.secondaryLinkButton {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  width: fit-content;
+}
+
+.primaryLinkButton {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: #ffffff;
+}
+
+.secondaryLinkButton {
+  background: var(--surface-soft);
+}
+
 .emptyState {
   width: min(40rem, 100%);
   background: var(--surface);
@@ -136,4 +174,66 @@
   padding: 1.5rem;
   display: grid;
   gap: 0.6rem;
+}
+
+.selectorGrid {
+  width: min(64rem, 100%);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+.selectorCard {
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  padding: 1rem;
+  display: grid;
+  gap: 0.65rem;
+  box-shadow: 0 8px 16px rgb(58 12 23 / 7%);
+}
+
+.selectorCardHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.selectorCardHeader h2 {
+  font-size: 1.1rem;
+}
+
+.scopeBadge {
+  border-radius: 999px;
+  border: 1px solid var(--brand-200);
+  background: var(--surface-soft);
+  color: var(--brand-700);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.selectorMeta {
+  color: #6f4b55;
+  font-size: 0.9rem;
+}
+
+.selectorLink {
+  border: 1px solid var(--brand-600);
+  border-radius: 0.5rem;
+  background: var(--brand-600);
+  color: #ffffff;
+  width: fit-content;
+  padding: 0.55rem 0.85rem;
+}
+
+.selectorSecondaryLink {
+  border: 1px solid var(--brand-200);
+  border-radius: 0.5rem;
+  background: var(--surface-soft);
+  color: var(--ink-900);
+  width: fit-content;
+  padding: 0.5rem 0.8rem;
 }
