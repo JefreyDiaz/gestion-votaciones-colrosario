@@ -27,6 +27,39 @@ type PollRow = {
   scope: PollScope;
 };
 
+async function fetchAllOpenPolls(nowIso: string): Promise<PollRow[]> {
+  const supabase = createServerServiceClient();
+  const pageSize = 500;
+  let from = 0;
+  const rows: PollRow[] = [];
+
+  while (true) {
+    const to = from + pageSize - 1;
+    const { data, error } = await supabase
+      .from("polls")
+      .select("id, title, description, starts_at, ends_at, scope")
+      .eq("status", "open")
+      .lte("starts_at", nowIso)
+      .gte("ends_at", nowIso)
+      .order("starts_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(`No se pudieron obtener las votaciones activas: ${error.message}`);
+    }
+
+    rows.push(...data);
+
+    if (data.length < pageSize) {
+      break;
+    }
+
+    from += pageSize;
+  }
+
+  return rows;
+}
+
 function mapPollWithOptions(poll: PollRow, options: CandidateOption[]): ActivePoll {
   return {
     id: poll.id,
@@ -42,19 +75,7 @@ function mapPollWithOptions(poll: PollRow, options: CandidateOption[]): ActivePo
 export async function getVoterAvailablePolls(voterDocument: string): Promise<ActivePoll[]> {
   const supabase = createServerServiceClient();
   const nowIso = new Date().toISOString();
-
-  const { data: openPolls, error: pollError } = await supabase
-    .from("polls")
-    .select("id, title, description, starts_at, ends_at, scope")
-    .eq("status", "open")
-    .lte("starts_at", nowIso)
-    .gte("ends_at", nowIso)
-    .order("starts_at", { ascending: false })
-    .range(0, 19);
-
-  if (pollError) {
-    throw new Error(`No se pudieron obtener las votaciones activas: ${pollError.message}`);
-  }
+  const openPolls = await fetchAllOpenPolls(nowIso);
 
   if (!openPolls.length) {
     return [];
